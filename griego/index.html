@@ -4,75 +4,141 @@
   <meta charset="UTF-8">
   <title>Vocabulario Griego</title>
   <style>
-    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-    nav { background-color: #f0f0f0; padding: 10px; margin-bottom: 20px; }
-    nav button { margin-right: 10px; }
-    .palabra { margin: 10px 0; padding: 10px; border-bottom: 1px solid #ccc; }
-    .grupo { font-size: 0.9em; color: #888; }
-    select { margin-bottom: 20px; }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    nav {
+      background: #333;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+    }
+    nav a.active {
+      background: #555;
+      border-radius: 4px;
+    }
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .filtro {
+      margin-bottom: 20px;
+    }
+    .palabra {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .etiquetas {
+      color: #666;
+      font-size: 0.9em;
+    }
   </style>
 </head>
 <body>
+
   <nav>
-    <button onclick="location.href='gramatica.html'">Gramática</button>
-    <button onclick="location.href='vocabulario.html'">Vocabulario</button>
+    <a href="#">Gramática</a>
+    <a href="#" class="active">Vocabulario</a>
   </nav>
 
-  <h1>Vocabulario Griego</h1>
+  <main>
+    <h1>Vocabulario Griego</h1>
 
-  <label for="filtro">Filtrar por etiqueta:</label>
-  <select id="filtro">
-    <option value="todas">Todas</option>
-  </select>
+    <div class="filtro">
+      <label for="filtroCategoria">Filtrar por categoría:</label>
+      <select id="filtroCategoria">
+        <option value="">-- Todas --</option>
+      </select>
+    </div>
 
-  <div id="contenedor-palabras"></div>
+    <div class="filtro">
+      <label for="filtroTipo">Filtrar por tipo:</label>
+      <select id="filtroTipo">
+        <option value="">-- Todos --</option>
+      </select>
+    </div>
+
+    <div id="listaPalabras"></div>
+  </main>
 
   <script>
+    const listaPalabras = document.getElementById("listaPalabras");
+    const filtroCategoria = document.getElementById("filtroCategoria");
+    const filtroTipo = document.getElementById("filtroTipo");
     let palabras = [];
 
-    // Cargar JSON externo
+    function obtenerCategorias(palabras) {
+      const categorias = new Set();
+      palabras.forEach(p => p.etiquetas.forEach(e => categorias.add(e)));
+      return [...categorias];
+    }
+
+    function obtenerTipos(palabras) {
+      const tipos = new Set();
+      palabras.forEach(p => tipos.add(p.tipo));
+      return [...tipos];
+    }
+
+    function mostrarPalabras() {
+      const categoriaSeleccionada = filtroCategoria.value;
+      const tipoSeleccionado = filtroTipo.value;
+      listaPalabras.innerHTML = "";
+
+      const filtradas = palabras.filter(p => {
+        const coincideCategoria = !categoriaSeleccionada || p.etiquetas.includes(categoriaSeleccionada);
+        const coincideTipo = !tipoSeleccionado || p.tipo === tipoSeleccionado;
+        return coincideCategoria && coincideTipo;
+      });
+
+      filtradas.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "palabra";
+        div.innerHTML = `<strong>${p.palabra}</strong> – ${p.traduccion}<br><span class="etiquetas">${p.tipo} · ${p.etiquetas.join(", ")}</span>`;
+        listaPalabras.appendChild(div);
+      });
+    }
+
+    function cargarFiltros() {
+      const categorias = obtenerCategorias(palabras);
+      categorias.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        filtroCategoria.appendChild(opt);
+      });
+
+      const tipos = obtenerTipos(palabras);
+      tipos.forEach(tipo => {
+        const opt = document.createElement("option");
+        opt.value = tipo;
+        opt.textContent = tipo;
+        filtroTipo.appendChild(opt);
+      });
+    }
+
+    filtroCategoria.addEventListener("change", mostrarPalabras);
+    filtroTipo.addEventListener("change", mostrarPalabras);
+
     fetch('vocab.json')
       .then(response => response.json())
       .then(data => {
         palabras = data;
-        poblarFiltro(palabras);
-        mostrarPalabras(palabras);
+        cargarFiltros();
+        mostrarPalabras();
       });
-
-    const contenedor = document.getElementById('contenedor-palabras');
-    const filtro = document.getElementById('filtro');
-
-    filtro.addEventListener('change', () => {
-      const seleccion = filtro.value;
-      const filtradas = seleccion === "todas"
-        ? palabras
-        : palabras.filter(p => p.etiquetas.includes(seleccion));
-      mostrarPalabras(filtradas);
-    });
-
-    function poblarFiltro(lista) {
-      const etiquetas = new Set();
-      lista.forEach(p => p.etiquetas.forEach(e => etiquetas.add(e)));
-      [...etiquetas].sort().forEach(et => {
-        const opt = document.createElement('option');
-        opt.value = et;
-        opt.textContent = et;
-        filtro.appendChild(opt);
-      });
-    }
-
-    function mostrarPalabras(lista) {
-      contenedor.innerHTML = '';
-      lista.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'palabra';
-        div.innerHTML = `
-          <strong>${p.palabra}</strong> – ${p.traduccion}<br>
-          <span class="grupo">${p.tipo} · ${p.etiquetas.join(', ')}</span>
-        `;
-        contenedor.appendChild(div);
-      });
-    }
   </script>
 </body>
 </html>
