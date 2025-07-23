@@ -17,4 +17,88 @@
     "tipo": "sustantivo",
     "etiquetas": ["comida", "vida cotidiana"]
   }
+  {
+    "griego": "όνομα",
+    "español": "nombre",
+    "tipo": "sustantivo",
+    "etiquetas": ["presentación"]
+  },
+  {
+    "griego": "καλημέρα",
+    "español": "buenos días",
+    "tipo": "expresión",
+    "etiquetas": ["saludo"]
+  },
+  {
+    "griego": "καληνύχτα",
+    "español": "buenas noches",
+    "tipo": "expresión",
+    "etiquetas": ["saludo"]
+  },
+  {
+    "griego": "Πώς σε λένε;",
+    "español": "¿Cómo te llamas?",
+    "tipo": "pregunta",
+    "etiquetas": ["presentación"]
+  },
+  {
+    "griego": "Από πού είστε;",
+    "español": "¿De dónde eres?",
+    "tipo": "pregunta",
+    "etiquetas": ["presentación"]
+  },
+  {
+    "griego": "Που μένετε;",
+    "español": "¿Dónde vives?",
+    "tipo": "pregunta",
+    "etiquetas": ["presentación"]
+  },
+  {
+    "griego": "Τι κάνετε;",
+    "español": "¿Cómo estás?",
+    "tipo": "pregunta",
+    "etiquetas": ["saludo"]
+  },
+  {
+    "griego": "ευχαριστώ",
+    "español": "gracias",
+    "tipo": "expresión",
+    "etiquetas": ["cortesía"]
+  },
+  {
+    "griego": "γεια σου",
+    "español": "hola",
+    "tipo": "expresión",
+    "etiquetas": ["saludo"]
+  },
+  {
+    "griego": "άρρωστος",
+    "español": "enfermo",
+    "tipo": "adjetivo",
+    "etiquetas": ["estado"]
+  },
+  {
+    "griego": "τώρα",
+    "español": "ahora",
+    "tipo": "adverbio",
+    "etiquetas": ["tiempo"]
+  },
+  {
+    "griego": "μελέτη",
+    "español": "estudiar",
+    "tipo": "verbo",
+    "etiquetas": ["rutina"]
+  },
+  {
+    "griego": "δουλεύω",
+    "español": "trabajar",
+    "tipo": "verbo",
+    "etiquetas": ["rutina"]
+  },
+  {
+    "griego": "δουλειά",
+    "español": "trabajo",
+    "tipo": "sustantivo",
+    "etiquetas": ["rutina"]
+  }
 ]
