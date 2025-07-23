@@ -136,8 +136,9 @@ function mostrarPalabras() {
     icono.className = "icono-ojo";
     icono.innerHTML = "👁️";
     icono.addEventListener("click", () => {
-      traduccion.style.display = traduccion.style.display === "none" ? "block" : "none";
-    });
+  const visible = getComputedStyle(traduccion).display !== "none";
+  traduccion.style.display = visible ? "none" : "block";
+});
 
     div.appendChild(contenido);
     div.appendChild(icono);
