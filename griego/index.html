@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>Vocabulario Griego</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    nav {
+      background: #333;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+    }
+    nav a.active {
+      background: #555;
+      border-radius: 4px;
+    }
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .filtro {
+      margin-bottom: 20px;
+    }
+    .palabra {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .etiquetas {
+      color: #666;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#">Gramática</a>
+    <a href="#" class="active">Vocabulario</a>
+  </nav>
+
+  <main>
+    <h1>Vocabulario Griego</h1>
+
+    <div class="filtro">
+      <label for="filtroCategoria">Filtrar por categoría:</label>
+      <select id="filtroCategoria">
+        <option value="">-- Todas --</option>
+      </select>
+    </div>
+
+    <div id="listaPalabras"></div>
+  </main>
+
+  <script>
+    const palabras = [
+      {
+        "palabra": "νερό",
+        "traduccion": "agua",
+        "tipo": "sustantivo",
+        "etiquetas": ["vida cotidiana", "bebida"]
+      },
+      {
+        "palabra": "πηγαίνω",
+        "traduccion": "ir",
+        "tipo": "verbo",
+        "etiquetas": ["acción", "viajes"]
+      },
+      {
+        "palabra": "καφές",
+        "traduccion": "café",
+        "tipo": "sustantivo",
+        "etiquetas": ["comida", "vida cotidiana"]
+      }
+    ];
+
+    const listaPalabras = document.getElementById("listaPalabras");
+    const filtro = document.getElementById("filtroCategoria");
+
+    function obtenerCategorias() {
+      const categorias = new Set();
+      palabras.forEach(p => p.etiquetas.forEach(e => categorias.add(e)));
+      return [...categorias];
+    }
+
+    function mostrarPalabras(filtrarPor = "") {
+      listaPalabras.innerHTML = "";
+      const filtradas = filtrarPor ? palabras.filter(p => p.etiquetas.includes(filtrarPor)) : palabras;
+      filtradas.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "palabra";
+        div.innerHTML = `<strong>${p.palabra}</strong> – ${p.traduccion}<br><span class="etiquetas">${p.tipo} · ${p.etiquetas.join(", ")}</span>`;
+        listaPalabras.appendChild(div);
+      });
+    }
+
+    function cargarCategorias() {
+      const categorias = obtenerCategorias();
+      categorias.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        filtro.appendChild(opt);
+      });
+    }
+
+    filtro.addEventListener("change", () => mostrarPalabras(filtro.value));
+
+    cargarCategorias();
+    mostrarPalabras();
+  </script>
+</body>
+</html>
