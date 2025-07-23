@@ -82,7 +82,7 @@
         <option value="">-- Todos --</option>
       </select>
     </div>
-
+<h2 id="tituloFiltro"></h2>
     <div id="listaPalabras"></div>
   </main>
 
@@ -107,20 +107,30 @@
 function mostrarPalabras() {
   const categoriaSeleccionada = filtroCategoria.value;
   const tipoSeleccionado = filtroTipo.value;
+  const tituloFiltro = document.getElementById("tituloFiltro");
   listaPalabras.innerHTML = "";
+  tituloFiltro.textContent = ""; // Reiniciar título
 
   const filtradas = palabras.filter(p => {
-    const coincideCategoria = !categoriaSeleccionada || (p.etiquetas && p.etiquetas.includes(categoriaSeleccionada));
+    const coincideCategoria = !categoriaSeleccionada || p.etiquetas.includes(categoriaSeleccionada);
     const coincideTipo = !tipoSeleccionado || p.tipo === tipoSeleccionado;
     return coincideCategoria && coincideTipo;
   });
 
+  // Generar el título de filtro
+  if (categoriaSeleccionada && tipoSeleccionado) {
+    tituloFiltro.textContent = `${capitalizar(tipoSeleccionado)} · ${capitalizar(categoriaSeleccionada)}`;
+  } else if (tipoSeleccionado) {
+    tituloFiltro.textContent = capitalizar(tipoSeleccionado);
+  } else if (categoriaSeleccionada) {
+    tituloFiltro.textContent = capitalizar(categoriaSeleccionada);
+  }
+
   filtradas.forEach(p => {
     const div = document.createElement("div");
-    div.className = "palabra";  // aquí restauramos la clase usada para estilo
+    div.className = "palabra";
 
     const contenido = document.createElement("div");
-
     const textoGriego = document.createElement("div");
     textoGriego.className = "texto-griego";
     textoGriego.textContent = p.griego;
@@ -129,23 +139,23 @@ function mostrarPalabras() {
     traduccion.className = "traduccion";
     traduccion.textContent = p.español;
 
-    contenido.appendChild(textoGriego);
-    contenido.appendChild(traduccion);
-
     const icono = document.createElement("span");
     icono.className = "icono-ojo";
     icono.innerHTML = "👁️";
     icono.addEventListener("click", () => {
-  const visible = getComputedStyle(traduccion).display !== "none";
-  traduccion.style.display = visible ? "none" : "block";
-});
+      const visible = traduccion.style.display === "block";
+      traduccion.style.display = visible ? "none" : "block";
+    });
 
+    contenido.appendChild(textoGriego);
+    contenido.appendChild(traduccion);
     div.appendChild(contenido);
     div.appendChild(icono);
 
     listaPalabras.appendChild(div);
   });
 }
+
 
     function cargarFiltros() {
       const categorias = obtenerCategorias(palabras);
@@ -175,6 +185,9 @@ function mostrarPalabras() {
         cargarFiltros();
         mostrarPalabras();
       });
+    function capitalizar(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
   </script>
 </body>
 </html>
