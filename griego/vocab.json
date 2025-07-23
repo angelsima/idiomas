@@ -1,19 +1,19 @@
 [
   {
-    "palabra": "νερό",
-    "traduccion": "agua",
+    "griego": "νερό",
+    "español": "agua",
     "tipo": "sustantivo",
     "etiquetas": ["vida cotidiana", "bebida"]
   },
   {
-    "palabra": "πηγαίνω",
-    "traduccion": "ir",
+    "griego": "πηγαίνω",
+    "español": "ir",
     "tipo": "verbo",
     "etiquetas": ["acción", "viajes"]
   },
   {
-    "palabra": "καφές",
-    "traduccion": "café",
+    "griego": "καφές",
+    "español": "café",
     "tipo": "sustantivo",
     "etiquetas": ["comida", "vida cotidiana"]
   }
