@@ -139,18 +139,32 @@ function mostrarPalabras() {
     traduccion.className = "traduccion";
     traduccion.textContent = p.español;
 
-    const icono = document.createElement("span");
-    icono.className = "icono-ojo";
-    icono.innerHTML = "👁️";
-    icono.addEventListener("click", () => {
-      const visible = traduccion.style.display === "block";
-      traduccion.style.display = visible ? "none" : "block";
-    });
+    const iconoOjo = document.createElement("span");
+iconoOjo.className = "icono-ojo";
+iconoOjo.innerHTML = "👁️";
+iconoOjo.title = "Mostrar traducción";
+iconoOjo.addEventListener("click", () => {
+  const visible = traduccion.style.display === "block";
+  traduccion.style.display = visible ? "none" : "block";
+});
+
+const iconoAudio = document.createElement("span");
+iconoAudio.className = "icono-ojo"; // Reutilizamos la misma clase para el estilo
+iconoAudio.innerHTML = "🔊";
+iconoAudio.title = "Escuchar palabra";
+iconoAudio.addEventListener("click", () => {
+  const utterance = new SpeechSynthesisUtterance(p.griego);
+  utterance.lang = 'el-GR'; // Código de idioma para griego moderno
+  speechSynthesis.speak(utterance);
+});
+
+
 
     contenido.appendChild(textoGriego);
     contenido.appendChild(traduccion);
     div.appendChild(contenido);
-    div.appendChild(icono);
+div.appendChild(iconoOjo);
+div.appendChild(iconoAudio);
 
     listaPalabras.appendChild(div);
   });
