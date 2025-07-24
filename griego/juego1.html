@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego de Vocabulario</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    nav {
+      background: #333;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+    }
+    nav a.active {
+      background: #555;
+      border-radius: 4px;
+    }
+    main {
+      max-width: 600px;
+      margin: 30px auto;
+      text-align: center;
+    }
+    .botones-modo {
+      margin-bottom: 20px;
+    }
+    .botones-modo button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .tarjeta {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+      font-size: 1.8em;
+      margin-bottom: 30px;
+    }
+    .opciones button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 1em;
+      width: 80%;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      background: white;
+      transition: background 0.3s;
+    }
+    .correcto {
+      background-color: #c8e6c9 !important;
+      border-color: #2e7d32;
+    }
+    .incorrecto {
+      background-color: #ffcdd2 !important;
+      border-color: #c62828;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#">Gramática</a>
+    <a href="#" class="active">Vocabulario</a>
+  </nav>
+
+  <main>
+    <div class="botones-modo">
+      <button id="modoGE">Griego-Español</button>
+      <button id="modoEG">Español-Griego</button>
+    </div>
+
+    <div class="tarjeta" id="tarjeta">...</div>
+    <div class="opciones" id="opciones"></div>
+  </main>
+
+  <script>
+    let palabras = [];
+    let modo = "GE"; // GE = Griego->Español, EG = Español->Griego
+    let palabraActual = null;
+
+    function obtenerAleatorio(arr, cantidad, excluir) {
+      const filtrado = arr.filter(p => p !== excluir);
+      const mezcla = filtrado.sort(() => 0.5 - Math.random());
+      return mezcla.slice(0, cantidad);
+    }
+
+    function mostrarPregunta() {
+      const lista = [...palabras];
+      palabraActual = lista[Math.floor(Math.random() * lista.length)];
+
+      const tarjeta = document.getElementById("tarjeta");
+      const opcionesDiv = document.getElementById("opciones");
+
+      const correctOption = modo === "GE" ? palabraActual.español : palabraActual.griego;
+      const distractores = obtenerAleatorio(lista, 2, palabraActual).map(p => modo === "GE" ? p.español : p.griego);
+
+      const opciones = [...distractores, correctOption].sort(() => 0.5 - Math.random());
+
+      tarjeta.textContent = modo === "GE" ? palabraActual.griego : palabraActual.español;
+
+      opcionesDiv.innerHTML = "";
+      opciones.forEach(opcion => {
+        const btn = document.createElement("button");
+        btn.textContent = opcion;
+        btn.addEventListener("click", () => {
+          if (opcion === correctOption) {
+            btn.classList.add("correcto");
+            setTimeout(mostrarPregunta, 800);
+          } else {
+            btn.classList.add("incorrecto");
+          }
+        });
+        opcionesDiv.appendChild(btn);
+      });
+    }
+
+    document.getElementById("modoGE").addEventListener("click", () => {
+      modo = "GE";
+      mostrarPregunta();
+    });
+    document.getElementById("modoEG").addEventListener("click", () => {
+      modo = "EG";
+      mostrarPregunta();
+    });
+
+    fetch("vocab.json")
+      .then(res => res.json())
+      .then(data => {
+        palabras = data;
+        mostrarPregunta();
+      });
+  </script>
+
+</body>
+</html>
