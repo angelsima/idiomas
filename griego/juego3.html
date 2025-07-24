@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>Crucigrama Griego</title>
+  <style>
+    body { font-family: sans-serif; background: #f4f4f4; margin:0; padding:20px; }
+    nav { background:#333; color:white; padding:10px; display:flex; justify-content:space-around; }
+    nav a { color:white; text-decoration:none; padding:8px 12px; }
+    nav a.active { background:#555; border-radius:4px; }
+    #crucigrama { display:grid; grid-template-columns: repeat(10, 30px); grid-template-rows: repeat(10, 30px); gap:2px; margin-bottom:20px; }
+    .celda { width:30px; height:30px; background:white; position:relative; }
+    .celda input { width:100%; height:100%; border:none; text-align:center; font-size:1em; text-transform:uppercase; }
+    .celda.bloque { background:#333; }
+    #definiciones { margin-top:20px; }
+    #definiciones ul { list-style:none; padding:0; }
+    #definiciones li { margin:5px 0; }
+    button { padding:10px 20px; font-size:1em; cursor:pointer; }
+    .correcto { background:#c8e6c9; }
+    .incorrecto { background:#ffcdd2; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#">Gramática</a>
+    <a href="#" class="active">Crucigrama</a>
+  </nav>
+  <h1>Crucigrama de Vocabulario Griego</h1>
+  <div id="crucigrama"></div>
+  <button id="comprobar">Comprobar</button>
+  <div id="definiciones"><h2>Definiciones</h2><ul></ul></div>
+
+  <script>
+    const GRID_SIZE = 10;
+    const canvas = document.getElementById('crucigrama');
+    const defsList = document.querySelector('#definiciones ul');
+    let grid = [];
+    let placed = [];
+
+    // Inicializar grid vacía
+    for(let r=0;r<GRID_SIZE;r++){
+      grid[r]=Array(GRID_SIZE).fill(null);
+    }
+
+    // Cargar vocab
+    fetch('vocab.json').then(r=>r.json()).then(data=>{
+      const words = data.slice(0,7); // tomamos 7 palabras
+      words.forEach((p,i)=>placeWord(p.griego, p.espanol, i+1));
+      renderGrid();
+    });
+
+    // Intentar colocar palabra
+    function placeWord(word, def, num) {
+      const maxAttempts = 100;
+      for(let attempt=0; attempt<maxAttempts; attempt++){
+        const horizontal = Math.random()<0.5;
+        const len = word.length;
+        const row = Math.floor(Math.random()*(horizontal?GRID_SIZE:GRID_SIZE-len+1));
+        const col = Math.floor(Math.random()* (horizontal?GRID_SIZE-len+1:GRID_SIZE));
+        // verificar espacio
+        let ok=true;
+        for(let j=0;j<len;j++){
+          const r = horizontal?row:row+j;
+          const c = horizontal?col+j:col;
+          const cell = grid[r][c];
+          if(cell && cell.char!==word[j]) { ok=false; break; }
+          if(cell && cell.char===word[j] && cell.block) { ok=false; break; }
+        }
+        if(!ok) continue;
+        // colocar
+        for(let j=0;j<len;j++){
+          const r = horizontal?row:row+j;
+          const c = horizontal?col+j:col;
+          grid[r][c] = {char:word[j], number: j===0?num:null};
+        }
+        placed.push({word,def,num,orientation:horizontal?'H':'V',row,col});
+        defsList.innerHTML += `<li><strong>${num}.</strong> ${def}</li>`;
+        return;
+      }
+      console.warn('No se pudo colocar',word);
+    }
+
+    // Renderizar la cuadrícula
+    function renderGrid(){
+      canvas.innerHTML='';
+      for(let r=0;r<GRID_SIZE;r++){
+        for(let c=0;c<GRID_SIZE;c++){
+          const cell = document.createElement('div');
+          cell.className='celda';
+          const info = grid[r][c];
+          if(info){
+            if(info.number) {
+              const numSpan = document.createElement('span');
+              numSpan.textContent=info.number;
+              numSpan.style.position='absolute'; numSpan.style.fontSize='0.6em';
+              numSpan.style.top='2px'; numSpan.style.left='2px';
+              cell.appendChild(numSpan);
+            }
+            const input = document.createElement('input');
+            input.maxLength=1;
+            input.dataset.char=info.char;
+            cell.appendChild(input);
+          } else {
+            cell.classList.add('bloque');
+          }
+          canvas.appendChild(cell);
+        }
+      }
+    }
+
+    // Comprobar respuestas
+    document.getElementById('comprobar').addEventListener('click', ()=>{
+      document.querySelectorAll('#crucigrama input').forEach(inp=>{
+        if(inp.value.toUpperCase()===inp.dataset.char.toUpperCase()){
+          inp.classList.add('correcto'); inp.classList.remove('incorrecto');
+        } else {
+          inp.classList.add('incorrecto'); inp.classList.remove('correcto');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
