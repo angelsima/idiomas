@@ -100,7 +100,7 @@
     "español": "trabajo",
     "tipo": "sustantivo",
     "etiquetas": ["rutina"]
-  }
+  },
     { "griego": "Τι γλώσσες μιλάτε;", "español": "¿Qué idiomas hablas?", "tipo": "frase", "etiquetas": ["lenguaje", "comunicación"] },
   { "griego": "ξέρω", "español": "saber", "tipo": "verbo", "etiquetas": ["lenguaje"] },
   { "griego": "γνωρίζω", "español": "saber", "tipo": "verbo", "etiquetas": ["lenguaje"] },
