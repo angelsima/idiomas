@@ -31,14 +31,13 @@
       margin: 30px auto;
       text-align: center;
     }
-    .botones-modo {
+    .filtros, .botones-modo {
       margin-bottom: 20px;
     }
-    .botones-modo button {
-      margin: 0 10px;
-      padding: 10px 20px;
+    select, button {
+      padding: 8px 12px;
+      margin: 5px;
       font-size: 1em;
-      cursor: pointer;
     }
     .tarjeta {
       background: white;
@@ -74,7 +73,8 @@
 
   <nav>
     <a href="#">Gramática</a>
-    <a href="#" class="active">Vocabulario</a>
+    <a href="juego1.html" class="active">Repasar</a>
+    <a href="index.html">Vocabulario</a>
   </nav>
 
   <main>
@@ -83,14 +83,29 @@
       <button id="modoEG">Español-Griego</button>
     </div>
 
+    <div class="filtros">
+      <label for="filtroCategoria">Categoría:</label>
+      <select id="filtroCategoria">
+        <option value="">-- Todas --</option>
+      </select>
+
+      <label for="filtroTipo">Tipo:</label>
+      <select id="filtroTipo">
+        <option value="">-- Todos --</option>
+      </select>
+    </div>
+
     <div class="tarjeta" id="tarjeta">...</div>
     <div class="opciones" id="opciones"></div>
   </main>
 
   <script>
     let palabras = [];
-    let modo = "GE"; // GE = Griego->Español, EG = Español->Griego
+    let modo = "GE";
     let palabraActual = null;
+
+    const filtroCategoria = document.getElementById("filtroCategoria");
+    const filtroTipo = document.getElementById("filtroTipo");
 
     function obtenerAleatorio(arr, cantidad, excluir) {
       const filtrado = arr.filter(p => p !== excluir);
@@ -99,20 +114,29 @@
     }
 
     function mostrarPregunta() {
-      const lista = [...palabras];
-      palabraActual = lista[Math.floor(Math.random() * lista.length)];
+      const listaFiltrada = aplicarFiltros(palabras);
+
+      if (listaFiltrada.length === 0) {
+        document.getElementById("tarjeta").textContent = "No hay palabras con esos filtros.";
+        document.getElementById("opciones").innerHTML = "";
+        return;
+      }
+
+      palabraActual = listaFiltrada[Math.floor(Math.random() * listaFiltrada.length)];
 
       const tarjeta = document.getElementById("tarjeta");
       const opcionesDiv = document.getElementById("opciones");
 
       const correctOption = modo === "GE" ? palabraActual.español : palabraActual.griego;
-      const distractores = obtenerAleatorio(lista, 2, palabraActual).map(p => modo === "GE" ? p.español : p.griego);
+      const distractores = obtenerAleatorio(listaFiltrada, 2, palabraActual).map(p =>
+        modo === "GE" ? p.español : p.griego
+      );
 
       const opciones = [...distractores, correctOption].sort(() => 0.5 - Math.random());
 
       tarjeta.textContent = modo === "GE" ? palabraActual.griego : palabraActual.español;
-
       opcionesDiv.innerHTML = "";
+
       opciones.forEach(opcion => {
         const btn = document.createElement("button");
         btn.textContent = opcion;
@@ -128,6 +152,41 @@
       });
     }
 
+    function aplicarFiltros(lista) {
+      const categoria = filtroCategoria.value;
+      const tipo = filtroTipo.value;
+
+      return lista.filter(p => {
+        const coincideCategoria = !categoria || p.etiquetas.includes(categoria);
+        const coincideTipo = !tipo || p.tipo === tipo;
+        return coincideCategoria && coincideTipo;
+      });
+    }
+
+    function cargarFiltros() {
+      const categorias = new Set();
+      const tipos = new Set();
+
+      palabras.forEach(p => {
+        p.etiquetas.forEach(e => categorias.add(e));
+        tipos.add(p.tipo);
+      });
+
+      categorias.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        filtroCategoria.appendChild(opt);
+      });
+
+      tipos.forEach(tipo => {
+        const opt = document.createElement("option");
+        opt.value = tipo;
+        opt.textContent = tipo;
+        filtroTipo.appendChild(opt);
+      });
+    }
+
     document.getElementById("modoGE").addEventListener("click", () => {
       modo = "GE";
       mostrarPregunta();
@@ -137,13 +196,16 @@
       mostrarPregunta();
     });
 
+    filtroCategoria.addEventListener("change", mostrarPregunta);
+    filtroTipo.addEventListener("change", mostrarPregunta);
+
     fetch("vocab.json")
       .then(res => res.json())
       .then(data => {
         palabras = data;
+        cargarFiltros();
         mostrarPregunta();
       });
   </script>
-
 </body>
 </html>
