@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>Pronunciación - Vocabulario Griego</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background: #333;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+    }
+    nav a.active {
+      background: #555;
+      border-radius: 4px;
+    }
+    main {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+    .tarjeta {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    button {
+      font-size: 1.5em;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .correcto {
+      color: green;
+      margin-top: 10px;
+    }
+    .incorrecto {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#">Gramática</a>
+    <a href="#">Vocabulario</a>
+    <a href="#" class="active">Pronunciación</a>
+  </nav>
+
+  <main>
+    <h1>Pronunciación en Griego</h1>
+    <div class="tarjeta" id="palabraActual">...</div>
+    <button id="btnHablar">🎤 Pronunciar</button>
+    <div id="resultado"></div>
+  </main>
+
+  <script>
+    let palabras = [];
+    let palabraActual = null;
+
+    function nuevaPalabra() {
+      palabraActual = palabras[Math.floor(Math.random() * palabras.length)].griego;
+      document.getElementById("palabraActual").textContent = palabraActual;
+      document.getElementById("resultado").textContent = "";
+    }
+
+    function iniciarReconocimiento() {
+      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      reconocimiento.lang = 'el-GR';
+      reconocimiento.interimResults = false;
+      reconocimiento.maxAlternatives = 1;
+
+      reconocimiento.start();
+
+      reconocimiento.onresult = function(event) {
+        const dicho = event.results[0][0].transcript.trim();
+        const resultado = document.getElementById("resultado");
+
+        if (dicho === palabraActual) {
+          resultado.textContent = '✔️ ¡Correcto!';
+          resultado.className = 'correcto';
+          setTimeout(nuevaPalabra, 1500);
+        } else {
+          resultado.textContent = `❌ Te escuché: "${dicho}"`;
+          resultado.className = 'incorrecto';
+        }
+      };
+
+      reconocimiento.onerror = function() {
+        document.getElementById("resultado").textContent = 'Error al usar el micrófono';
+        document.getElementById("resultado").className = 'incorrecto';
+      }
+    }
+
+    document.getElementById("btnHablar").addEventListener("click", iniciarReconocimiento);
+
+    fetch('vocab.json')
+      .then(res => res.json())
+      .then(data => {
+        palabras = data.filter(p => p.griego); // solo si hay campo griego
+        nuevaPalabra();
+      });
+  </script>
+</body>
+</html>
