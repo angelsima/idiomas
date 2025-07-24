@@ -50,6 +50,14 @@
       cursor: pointer;
       margin-top: 20px;
     }
+    canvas {
+      border: 1px solid #ccc;
+      width: 100%;
+      max-width: 500px;
+      height: 100px;
+      margin: 20px auto;
+      display: block;
+    }
     .correcto {
       color: green;
       margin-top: 10px;
@@ -71,17 +79,65 @@
     <h1>Pronunciación en Griego</h1>
     <div class="tarjeta" id="palabraActual">...</div>
     <button id="btnHablar">🎤 Pronunciar</button>
+    <canvas id="visualizador"></canvas>
     <div id="resultado"></div>
   </main>
 
   <script>
     let palabras = [];
     let palabraActual = null;
+    let audioContext, analyser, dataArray, source, stream;
+    const canvas = document.getElementById("visualizador");
+    const ctx = canvas.getContext("2d");
 
     function nuevaPalabra() {
       palabraActual = palabras[Math.floor(Math.random() * palabras.length)].griego;
       document.getElementById("palabraActual").textContent = palabraActual;
       document.getElementById("resultado").textContent = "";
+    }
+
+    async function iniciarVisualizador() {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+
+      const bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+
+      source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      function dibujar() {
+        requestAnimationFrame(dibujar);
+        analyser.getByteTimeDomainData(dataArray);
+
+        ctx.fillStyle = "#f4f4f4";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#007acc";
+
+        ctx.beginPath();
+        const sliceWidth = canvas.width / dataArray.length;
+        let x = 0;
+
+        for (let i = 0; i < dataArray.length; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * canvas.height / 2;
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+          x += sliceWidth;
+        }
+
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+      }
+
+      dibujar();
     }
 
     function iniciarReconocimiento() {
@@ -106,33 +162,36 @@
         }
       };
 
-      recognition.onerror = function(event) {
-  console.error("Error de reconocimiento:", event.error);
-  switch (event.error) {
-    case "not-allowed":
-      alert("No se permitió el uso del micrófono (permiso denegado o no solicitado).");
-      break;
-    case "service-not-allowed":
-      alert("El servicio de reconocimiento no está disponible.");
-      break;
-    case "no-speech":
-      alert("No se detectó ninguna voz.");
-      break;
-    case "aborted":
-      alert("El reconocimiento fue interrumpido.");
-      break;
-    default:
-      alert("Error desconocido al usar el micrófono: " + event.error);
-  }
-};
+      reconocimiento.onerror = function(event) {
+        console.error("Error de reconocimiento:", event.error);
+        switch (event.error) {
+          case "not-allowed":
+            alert("No se permitió el uso del micrófono (permiso denegado o no solicitado).");
+            break;
+          case "service-not-allowed":
+            alert("El servicio de reconocimiento no está disponible.");
+            break;
+          case "no-speech":
+            alert("No se detectó ninguna voz.");
+            break;
+          case "aborted":
+            alert("El reconocimiento fue interrumpido.");
+            break;
+          default:
+            alert("Error desconocido al usar el micrófono: " + event.error);
+        }
+      };
     }
 
-    document.getElementById("btnHablar").addEventListener("click", iniciarReconocimiento);
+    document.getElementById("btnHablar").addEventListener("click", async () => {
+      await iniciarVisualizador();
+      iniciarReconocimiento();
+    });
 
     fetch('vocab.json')
       .then(res => res.json())
       .then(data => {
-        palabras = data.filter(p => p.griego); // solo si hay campo griego
+        palabras = data.filter(p => p.griego);
         nuevaPalabra();
       });
   </script>
