@@ -106,10 +106,25 @@
         }
       };
 
-      reconocimiento.onerror = function() {
-        document.getElementById("resultado").textContent = 'Error al usar el micrófono';
-        document.getElementById("resultado").className = 'incorrecto';
-      }
+      recognition.onerror = function(event) {
+  console.error("Error de reconocimiento:", event.error);
+  switch (event.error) {
+    case "not-allowed":
+      alert("No se permitió el uso del micrófono (permiso denegado o no solicitado).");
+      break;
+    case "service-not-allowed":
+      alert("El servicio de reconocimiento no está disponible.");
+      break;
+    case "no-speech":
+      alert("No se detectó ninguna voz.");
+      break;
+    case "aborted":
+      alert("El reconocimiento fue interrumpido.");
+      break;
+    default:
+      alert("Error desconocido al usar el micrófono: " + event.error);
+  }
+};
     }
 
     document.getElementById("btnHablar").addEventListener("click", iniciarReconocimiento);
