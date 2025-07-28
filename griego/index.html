@@ -118,6 +118,13 @@ function mostrarPalabras() {
     return coincideCategoria && coincideTipo;
   });
 
+  // Ordenar filtradas alfabéticamente por texto griego
+  filtradas.sort((a, b) => {
+    const aGriego = Array.isArray(a.griego) ? a.griego[0] : a.griego;
+    const bGriego = Array.isArray(b.griego) ? b.griego[0] : b.griego;
+    return aGriego.localeCompare(bGriego, 'el');
+  });
+
   // Generar el título de filtro
   if (categoriaSeleccionada && tipoSeleccionado) {
     tituloFiltro.textContent = `${capitalizar(tipoSeleccionado)} · ${capitalizar(categoriaSeleccionada)}`;
@@ -204,6 +211,12 @@ function mostrarPalabras() {
       .then(response => response.json())
       .then(data => {
         palabras = data;
+          // Ordenar alfabéticamente según el texto griego (si es array, tomamos el primer elemento)
+    palabras.sort((a, b) => {
+      const aGriego = Array.isArray(a.griego) ? a.griego[0] : a.griego;
+      const bGriego = Array.isArray(b.griego) ? b.griego[0] : b.griego;
+      return aGriego.localeCompare(bGriego, 'el'); // 'el' para griego, opcional
+    });
         cargarFiltros();
         mostrarPalabras();
       });
