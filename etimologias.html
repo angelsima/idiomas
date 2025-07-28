@@ -135,18 +135,26 @@
 
         const titulo = document.createElement('div');
         titulo.className = 'texto-principal';
-        titulo.textContent = e.griego + (e.espanol ? ' – ' + (Array.isArray(e.espanol) ? e.espanol.join(', ') : e.espanol) : '');
+        // Mostrar solo palabra en español como título
+        titulo.textContent = Array.isArray(e.espanol) ? e.espanol.join(', ') : e.espanol;
 
         const ojo = document.createElement('span');
         ojo.className = 'icono-ojo';
         ojo.textContent = '👁️';
-        ojo.addEventListener('click', () => {
-          etim.style.display = etim.style.display === 'block' ? 'none' : 'block';
-        });
 
         const etim = document.createElement('div');
         etim.className = 'etimologia';
-        etim.innerHTML = `<strong>Raíz:</strong> ${e.raiz || ''} <br> <strong>Significado:</strong> ${e.significadoRaiz || ''} <br> <strong>Derivadas:</strong> ${e.derivadas ? (Array.isArray(e.derivadas) ? e.derivadas.join(', ') : e.derivadas) : ''}`;
+        // Incluir origen y notas en el desplegable
+        etim.innerHTML = 
+          `<strong>Origen:</strong> ${Array.isArray(e.griego) ? e.griego.join(', ') : e.griego}` +
+          `<br><strong>Raíz:</strong> ${e.raiz || ''}` +
+          `<br><strong>Significado:</strong> ${e.significadoRaiz || ''}` +
+          `<br><strong>Derivadas:</strong> ${e.derivadas ? (Array.isArray(e.derivadas) ? e.derivadas.join(', ') : e.derivadas) : ''}` +
+          `<br><strong>Notas:</strong> ${e.notas || ''}`;
+
+        ojo.addEventListener('click', () => {
+          etim.style.display = etim.style.display === 'block' ? 'none' : 'block';
+        });
 
         div.append(titulo, ojo, etim);
         listaEntradas.appendChild(div);
