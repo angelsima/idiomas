@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Etimologías</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    header {
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 1.4em;
+    }
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .buscador {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 8px;
+    }
+    #inputBusqueda {
+      flex: 1;
+      padding: 8px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #btnTeclado {
+      cursor: pointer;
+      font-size: 1.4em;
+    }
+    .teclado-virtual {
+      display: none;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+    .tecla {
+      padding: 6px 10px;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .entrada {
+      background: white;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .texto-principal {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .etimologia {
+      display: none;
+      margin-top: 8px;
+      color: #333;
+      line-height: 1.4;
+    }
+    .icono-ojo {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <header>Etimologías</header>
+  <main>
+    <div class="buscador">
+      <input id="inputBusqueda" placeholder="Buscar palabra en español o griego…" autofocus />
+      <span id="btnTeclado" title="Teclado griego">⌨️</span>
+    </div>
+    <div id="tecladoVirtual" class="teclado-virtual"></div>
+    <div id="listaEntradas"></div>
+  </main>
+
+  <script>
+    const listaEntradas = document.getElementById('listaEntradas');
+    const inputBusqueda = document.getElementById('inputBusqueda');
+    const btnTeclado = document.getElementById('btnTeclado');
+    const tecladoVirtual = document.getElementById('tecladoVirtual');
+    let entradas = [];
+
+    // Teclado griego
+    const griego = ['α','β','γ','δ','ε','ζ','η','θ','ι','κ','λ','μ','ν','ξ','ο','π','ρ','σ','τ','υ','φ','χ','ψ','ω','ά','έ','ή','ί','ό','ύ','ώ'];
+    griego.forEach(letra => {
+      const btn = document.createElement('span');
+      btn.textContent = letra;
+      btn.className = 'tecla';
+      btn.addEventListener('click', () => {
+        inputBusqueda.value += letra;
+        filtrarYMostrar();
+      });
+      tecladoVirtual.appendChild(btn);
+    });
+    btnTeclado.addEventListener('click', () => {
+      tecladoVirtual.style.display = tecladoVirtual.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    inputBusqueda.addEventListener('input', filtrarYMostrar);
+
+    function filtrarYMostrar() {
+      const termino = inputBusqueda.value.trim().toLowerCase();
+      const filtradas = entradas.filter(e => {
+        const esp = Array.isArray(e.espanol) ? e.espanol.join(' ') : e.espanol;
+        const gr = Array.isArray(e.griego) ? e.griego.join(' ') : e.griego;
+        return esp.toLowerCase().includes(termino) || gr.toLowerCase().includes(termino);
+      });
+      mostrarEntradas(filtradas);
+    }
+
+    function mostrarEntradas(lista) {
+      listaEntradas.innerHTML = '';
+      lista.forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'entrada';
+
+        const titulo = document.createElement('div');
+        titulo.className = 'texto-principal';
+        titulo.textContent = e.griego + (e.espanol ? ' – ' + (Array.isArray(e.espanol) ? e.espanol.join(', ') : e.espanol) : '');
+
+        const ojo = document.createElement('span');
+        ojo.className = 'icono-ojo';
+        ojo.textContent = '👁️';
+        ojo.addEventListener('click', () => {
+          etim.style.display = etim.style.display === 'block' ? 'none' : 'block';
+        });
+
+        const etim = document.createElement('div');
+        etim.className = 'etimologia';
+        etim.innerHTML = `<strong>Raíz:</strong> ${e.raiz || ''} <br> <strong>Significado:</strong> ${e.significadoRaiz || ''} <br> <strong>Derivadas:</strong> ${e.derivadas ? (Array.isArray(e.derivadas) ? e.derivadas.join(', ') : e.derivadas) : ''}`;
+
+        div.append(titulo, ojo, etim);
+        listaEntradas.appendChild(div);
+      });
+    }
+
+    // Carga inicial
+    fetch('etimos.json')
+      .then(resp => resp.json())
+      .then(data => {
+        entradas = data;
+        mostrarEntradas(entradas);
+      })
+      .catch(err => console.error('Error al cargar etimologías:', err));
+  </script>
+</body>
+</html>
