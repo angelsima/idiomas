@@ -132,40 +132,47 @@ function mostrarPalabras() {
     div.className = "palabra";
 
     const contenido = document.createElement("div");
+
+    // Mostrar texto griego
     const textoGriego = document.createElement("div");
     textoGriego.className = "texto-griego";
-    textoGriego.textContent = p.griego;
+    textoGriego.textContent = Array.isArray(p.griego) ? p.griego.join(", ") : p.griego;
 
+    // Mostrar traducción
     const traduccion = document.createElement("div");
     traduccion.className = "traduccion";
-    traduccion.textContent = p.español;
+    traduccion.style.display = "none"; // Oculta inicialmente
+    traduccion.textContent = Array.isArray(p.español) ? p.español.join(", ") : p.español;
 
+    // Botón para mostrar traducción
     const iconoOjo = document.createElement("span");
-iconoOjo.className = "icono-ojo";
-iconoOjo.innerHTML = "👁️";
-iconoOjo.title = "Mostrar traducción";
-iconoOjo.addEventListener("click", () => {
-  const visible = traduccion.style.display === "block";
-  traduccion.style.display = visible ? "none" : "block";
-});
+    iconoOjo.className = "icono-ojo";
+    iconoOjo.innerHTML = "👁️";
+    iconoOjo.title = "Mostrar traducción";
+    iconoOjo.addEventListener("click", () => {
+      const visible = traduccion.style.display === "block";
+      traduccion.style.display = visible ? "none" : "block";
+    });
 
-const iconoAudio = document.createElement("span");
-iconoAudio.className = "icono-ojo"; // Reutilizamos la misma clase para el estilo
-iconoAudio.innerHTML = "🔊";
-iconoAudio.title = "Escuchar palabra";
-iconoAudio.addEventListener("click", () => {
-  const utterance = new SpeechSynthesisUtterance(p.griego);
-  utterance.lang = 'el-GR'; // Código de idioma para griego moderno
-  speechSynthesis.speak(utterance);
-});
-
-
+    // Botón para reproducir audio
+    const iconoAudio = document.createElement("span");
+    iconoAudio.className = "icono-ojo"; // Estilo reutilizado
+    iconoAudio.innerHTML = "🔊";
+    iconoAudio.title = "Escuchar palabra";
+    iconoAudio.addEventListener("click", () => {
+      const frases = Array.isArray(p.griego) ? p.griego : [p.griego];
+      frases.forEach(frase => {
+        const utterance = new SpeechSynthesisUtterance(frase);
+        utterance.lang = 'el-GR';
+        speechSynthesis.speak(utterance);
+      });
+    });
 
     contenido.appendChild(textoGriego);
     contenido.appendChild(traduccion);
     div.appendChild(contenido);
-div.appendChild(iconoOjo);
-div.appendChild(iconoAudio);
+    div.appendChild(iconoOjo);
+    div.appendChild(iconoAudio);
 
     listaPalabras.appendChild(div);
   });
