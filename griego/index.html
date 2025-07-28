@@ -57,6 +57,36 @@
       cursor: pointer;
       font-size: 1.2em;
     }
+      /* Estilos del buscador y teclado */
+    .buscador {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    #inputBusqueda {
+      flex: 1;
+      padding: 8px;
+      font-size: 1em;
+    }
+    #btnTeclado {
+      cursor: pointer;
+      font-size: 1.5em;
+    }
+    .teclado-virtual {
+      display: none;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+    .tecla {
+      padding: 6px 10px;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
@@ -69,7 +99,13 @@
 
   <main>
     <h1>Vocabulario Griego</h1>
-
+    
+ <!-- Buscador + teclado virtual -->
+    <div class="buscador">
+      <input id="inputBusqueda" placeholder="Buscar en español o griego…" />
+      <span id="btnTeclado" title="Teclado griego">⌨️</span>
+    </div>
+    <div id="tecladoVirtual" class="teclado-virtual"></div>
     <div class="filtro">
       <label for="filtroCategoria">Filtrar por categoría:</label>
       <select id="filtroCategoria">
@@ -91,138 +127,134 @@
     const listaPalabras = document.getElementById("listaPalabras");
     const filtroCategoria = document.getElementById("filtroCategoria");
     const filtroTipo = document.getElementById("filtroTipo");
+     const inputBusqueda = document.getElementById("inputBusqueda");
+    const btnTeclado = document.getElementById("btnTeclado");
+    const tecladoVirtual = document.getElementById("tecladoVirtual");
     let palabras = [];
 
-    function obtenerCategorias(palabras) {
-      const categorias = new Set();
-      palabras.forEach(p => p.etiquetas.forEach(e => categorias.add(e)));
-      return [...categorias];
-    }
-
-    function obtenerTipos(palabras) {
-      const tipos = new Set();
-      palabras.forEach(p => tipos.add(p.tipo));
-      return [...tipos];
-    }
-
-function mostrarPalabras() {
-  const categoriaSeleccionada = filtroCategoria.value;
-  const tipoSeleccionado = filtroTipo.value;
-  const tituloFiltro = document.getElementById("tituloFiltro");
-  listaPalabras.innerHTML = "";
-  tituloFiltro.textContent = ""; // Reiniciar título
-
-  const filtradas = palabras.filter(p => {
-    const coincideCategoria = !categoriaSeleccionada || p.etiquetas.includes(categoriaSeleccionada);
-    const coincideTipo = !tipoSeleccionado || p.tipo === tipoSeleccionado;
-    return coincideCategoria && coincideTipo;
-  });
-
-  // Ordenar filtradas alfabéticamente por texto griego
-  filtradas.sort((a, b) => {
-    const aGriego = Array.isArray(a.griego) ? a.griego[0] : a.griego;
-    const bGriego = Array.isArray(b.griego) ? b.griego[0] : b.griego;
-    return aGriego.localeCompare(bGriego, 'el');
-  });
-
-  // Generar el título de filtro
-  if (categoriaSeleccionada && tipoSeleccionado) {
-    tituloFiltro.textContent = `${capitalizar(tipoSeleccionado)} · ${capitalizar(categoriaSeleccionada)}`;
-  } else if (tipoSeleccionado) {
-    tituloFiltro.textContent = capitalizar(tipoSeleccionado);
-  } else if (categoriaSeleccionada) {
-    tituloFiltro.textContent = capitalizar(categoriaSeleccionada);
-  }
-
-  filtradas.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "palabra";
-
-    const contenido = document.createElement("div");
-
-    // Mostrar texto griego
-    const textoGriego = document.createElement("div");
-    textoGriego.className = "texto-griego";
-    textoGriego.textContent = Array.isArray(p.griego) ? p.griego.join(" / ") : p.griego;
-
-    // Mostrar traducción
-    const traduccion = document.createElement("div");
-    traduccion.className = "traduccion";
-    traduccion.style.display = "none"; // Oculta inicialmente
-    traduccion.textContent = Array.isArray(p.español) ? p.español.join(" / ") : p.español;
-
-    // Botón para mostrar traducción
-    const iconoOjo = document.createElement("span");
-    iconoOjo.className = "icono-ojo";
-    iconoOjo.innerHTML = "👁️";
-    iconoOjo.title = "Mostrar traducción";
-    iconoOjo.addEventListener("click", () => {
-      const visible = traduccion.style.display === "block";
-      traduccion.style.display = visible ? "none" : "block";
-    });
-
-    // Botón para reproducir audio
-    const iconoAudio = document.createElement("span");
-    iconoAudio.className = "icono-ojo"; // Estilo reutilizado
-    iconoAudio.innerHTML = "🔊";
-    iconoAudio.title = "Escuchar palabra";
-    iconoAudio.addEventListener("click", () => {
-      const frases = Array.isArray(p.griego) ? p.griego : [p.griego];
-      frases.forEach(frase => {
-        const utterance = new SpeechSynthesisUtterance(frase);
-        utterance.lang = 'el-GR';
-        speechSynthesis.speak(utterance);
+     // Construye el teclado virtual
+    const griego = ['α','β','γ','δ','ε','ζ','η','θ','ι','κ','λ','μ','ν','ξ','ο','π','ρ','σ','τ','υ','φ','χ','ψ','ω','ά','έ','ή','ί','ό','ύ','ώ'];
+    griego.forEach(letra => {
+      const btn = document.createElement('span');
+      btn.textContent = letra;
+      btn.className = 'tecla';
+      btn.addEventListener('click', () => {
+        inputBusqueda.value += letra;
+        filtrarYMostrar();
       });
+      tecladoVirtual.appendChild(btn);
     });
 
-    contenido.appendChild(textoGriego);
-    contenido.appendChild(traduccion);
-    div.appendChild(contenido);
-    div.appendChild(iconoOjo);
-    div.appendChild(iconoAudio);
+    btnTeclado.addEventListener('click', () => {
+      tecladoVirtual.style.display =
+        tecladoVirtual.style.display === 'flex' ? 'none' : 'flex';
+    });
 
-    listaPalabras.appendChild(div);
-  });
-}
+    inputBusqueda.addEventListener('input', filtrarYMostrar);
 
+    function obtenerCategorias(palabras) {
+      return [...new Set(palabras.flatMap(p => p.etiquetas))];
+    }
+    function obtenerTipos(palabras) {
+      return [...new Set(palabras.map(p => p.tipo))];
+    }
 
     function cargarFiltros() {
-      const categorias = obtenerCategorias(palabras);
-      categorias.forEach(cat => {
-        const opt = document.createElement("option");
-        opt.value = cat;
-        opt.textContent = cat;
-        filtroCategoria.appendChild(opt);
+      obtenerCategorias(palabras).forEach(cat => {
+        filtroCategoria
+          .appendChild(new Option(cat, cat));
       });
-
-      const tipos = obtenerTipos(palabras);
-      tipos.forEach(tipo => {
-        const opt = document.createElement("option");
-        opt.value = tipo;
-        opt.textContent = tipo;
-        filtroTipo.appendChild(opt);
+      obtenerTipos(palabras).forEach(tipo => {
+        filtroTipo
+          .appendChild(new Option(tipo, tipo));
       });
     }
 
     filtroCategoria.addEventListener("change", mostrarPalabras);
     filtroTipo.addEventListener("change", mostrarPalabras);
 
+    function filtrarYMostrar() {
+      const termino = inputBusqueda.value.trim().toLowerCase();
+      let filtradas = palabras;
+
+      // aplica filtros de categoría y tipo
+      const cat = filtroCategoria.value,
+            tip = filtroTipo.value;
+      filtradas = filtradas.filter(p =>
+        (!cat || p.etiquetas.includes(cat)) &&
+        (!tip || p.tipo === tip)
+      );
+
+      // aplica filtro de búsqueda
+      if (termino) {
+        filtradas = filtradas.filter(p => {
+          // concatena todos los posibles términos
+          const esp = Array.isArray(p.español) ? p.español.join(' ') : p.español;
+          const gr = Array.isArray(p.griego) ? p.griego.join(' ') : p.griego;
+          return esp.toLowerCase().startsWith(termino)
+              || gr.toLowerCase().startsWith(termino);
+        });
+      }
+
+      mostrarPalabras(filtradas);
+    }
+
+    function mostrarPalabras(lista = null) {
+      const listaM = lista || palabras.slice();
+
+      // orden alfabético griego
+      listaM.sort((a,b) => {
+        const ag = Array.isArray(a.griego)?a.griego[0]:a.griego;
+        const bg = Array.isArray(b.griego)?b.griego[0]:b.griego;
+        return ag.localeCompare(bg,'el');
+      });
+
+      listaPalabras.innerHTML = '';
+      listaM.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "palabra";
+        const contenido = document.createElement("div");
+
+        const tg = document.createElement("div");
+        tg.className = "texto-griego";
+        tg.textContent = Array.isArray(p.griego) ? p.griego.join(" / ") : p.griego;
+
+        const tr = document.createElement("div");
+        tr.className = "traduccion";
+        tr.style.display = "none";
+        tr.textContent = Array.isArray(p.español) ? p.español.join(" / ") : p.español;
+
+        const ojo = document.createElement("span");
+        ojo.className = "icono-ojo"; ojo.innerHTML = "👁️";
+        ojo.onclick = () => tr.style.display = tr.style.display==='block'?'none':'block';
+
+        const audio = document.createElement("span");
+        audio.className = "icono-ojo"; audio.innerHTML = "🔊";
+        audio.onclick = ()=> {
+          const frases = Array.isArray(p.griego)?p.griego:[p.griego];
+          frases.forEach(f=>{let u=new SpeechSynthesisUtterance(f);u.lang='el-GR';speechSynthesis.speak(u);});
+        };
+
+        contenido.append(tg, tr);
+        div.append(contenido, ojo, audio);
+        listaPalabras.appendChild(div);
+      });
+    }
+
+    // carga inicial
     fetch('vocab.json')
-      .then(response => response.json())
-      .then(data => {
+      .then(r=>r.json())
+      .then(data=>{
         palabras = data;
-          // Ordenar alfabéticamente según el texto griego (si es array, tomamos el primer elemento)
-    palabras.sort((a, b) => {
-      const aGriego = Array.isArray(a.griego) ? a.griego[0] : a.griego;
-      const bGriego = Array.isArray(b.griego) ? b.griego[0] : b.griego;
-      return aGriego.localeCompare(bGriego, 'el'); // 'el' para griego, opcional
-    });
+        // orden inicial griego
+        palabras.sort((a,b)=> {
+          const ag=Array.isArray(a.griego)?a.griego[0]:a.griego;
+          const bg=Array.isArray(b.griego)?b.griego[0]:b.griego;
+          return ag.localeCompare(bg,'el');
+        });
         cargarFiltros();
         mostrarPalabras();
       });
-    function capitalizar(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
   </script>
 </body>
 </html>
