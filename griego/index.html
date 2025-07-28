@@ -143,13 +143,13 @@ function mostrarPalabras() {
     // Mostrar texto griego
     const textoGriego = document.createElement("div");
     textoGriego.className = "texto-griego";
-    textoGriego.textContent = Array.isArray(p.griego) ? p.griego.join(", ") : p.griego;
+    textoGriego.textContent = Array.isArray(p.griego) ? p.griego.join(" / ") : p.griego;
 
     // Mostrar traducción
     const traduccion = document.createElement("div");
     traduccion.className = "traduccion";
     traduccion.style.display = "none"; // Oculta inicialmente
-    traduccion.textContent = Array.isArray(p.español) ? p.español.join(", ") : p.español;
+    traduccion.textContent = Array.isArray(p.español) ? p.español.join(" / ") : p.español;
 
     // Botón para mostrar traducción
     const iconoOjo = document.createElement("span");
