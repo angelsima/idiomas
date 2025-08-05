@@ -146,11 +146,7 @@
         etim.className = 'etimologia';
         // Incluir origen y notas en el desplegable
         etim.innerHTML = 
-          `<strong>Origen:</strong> ${Array.isArray(e.griego) ? e.griego.join(', ') : e.griego}` +
-          `<br><strong>Raíz:</strong> ${e.raiz || ''}` +
-          `<br><strong>Significado:</strong> ${e.significadoRaiz || ''}` +
-          `<br><strong>Derivadas:</strong> ${e.derivadas ? (Array.isArray(e.derivadas) ? e.derivadas.join(', ') : e.derivadas) : ''}` +
-          `<br><strong>Notas:</strong> ${e.notas || ''}`;
+          `${e.notas || ''}`;
 
         ojo.addEventListener('click', () => {
           etim.style.display = etim.style.display === 'block' ? 'none' : 'block';
